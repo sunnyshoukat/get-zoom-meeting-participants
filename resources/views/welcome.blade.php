@@ -39,12 +39,14 @@
 
             <div class="col-md-12">
 
-                <div id="errorAlert" class="alert alert-danger alert-dismissible fade show d-none" role="alert">
-                    <strong>Holy guacamole!</strong> Something went wrong
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
+                @if (isset($error))
+                    <div id="errorAlert" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ $error }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                @endif
 
                 <form action="{{ route('get.participants') }}" method="post">
                     @csrf

@@ -27,6 +27,15 @@ class ZoomController extends Controller
         $to_date = date('Y-m-d', strtotime($request->to_date));
         $response = $this->zoomApiCurl($request->token, $from_date, $to_date);
 
+        if ($to_date > $from_date) {
+            $data['title'] = 'Get Participant';
+            $data['token'] = $request->token;
+            $data['from_date'] = $request->from_date;
+            $data['to_date'] = $request->to_date;
+            $data['errro'] = 'From Date must be greater than To Date';
+            return view('welcome', $data);
+        }
+
         // dd($response['meetings']);
         $participantsList = array();
         if ($response) {

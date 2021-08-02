@@ -118,6 +118,6 @@ class ZoomController extends Controller
             return json_decode($err, true);
         }
         $response = json_decode($response, true);
-        return $response['participants'];
+        return isset($response['participants']) ? $response['participants'] : [];
     }
 }

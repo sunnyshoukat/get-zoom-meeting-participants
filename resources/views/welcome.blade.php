@@ -53,43 +53,44 @@
                             <label for="#JWTToken">Access Token</label>
                             <input type="text" id="JWTToken"
                                 class="form-control w-100 @error('token') is-invalid @enderror"
-                                value="@isset($token){{ $token }}@endisset" name="token">
-                                @error('token')
+                                value="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6IlVVNzhVblVyUnAyQnhGN1lMNVVQcVEiLCJleHAiOjE2Mjg3MDY1NDAsImlhdCI6MTYyMDcxNTkzMX0.INVxF6VRUBlJhg5BZ2hC7Wdbs7P7e7PGUlq3Z1xQWHY"
+                                name="token">
+                            @error('token')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                        <div class="form-group col-md-12 my-1">
+                            <label for="#formDate">From Date</label>
+                            <input type="date" id="formDate"
+                                class="form-control w-100 @error('from_date') is-invalid @enderror"
+                                value="@isset($from_date){{ $from_date }}@endisset" name="from_date">
+                                @error('from_date')
                                     <div class="invalid-feedback">
                                         {{ $message }}
                                     </div>
                                 @enderror
                             </div>
                             <div class="form-group col-md-12 my-1">
-                                <label for="#formDate">From Date</label>
-                                <input type="date" id="formDate"
-                                    class="form-control w-100 @error('from_date') is-invalid @enderror"
-                                    value="@isset($from_date){{ $from_date }}@endisset" name="from_date">
-                                    @error('from_date')
+                                <label for="#toDate">To Date</label>
+                                <input type="date" id="toDate" pattern="{yyyy-mm-dd}"
+                                    class="form-control w-100 @error('to_date') is-invalid @enderror"
+                                    value="@isset($to_date){{ $to_date }}@endisset" name="to_date">
+                                    @error('to_date')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
                                     @enderror
                                 </div>
-                                <div class="form-group col-md-12 my-1">
-                                    <label for="#toDate">To Date</label>
-                                    <input type="date" id="toDate" pattern="{yyyy-mm-dd}"
-                                        class="form-control w-100 @error('to_date') is-invalid @enderror"
-                                        value="@isset($to_date){{ $to_date }}@endisset" name="to_date">
-                                        @error('to_date')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
-                                        @enderror
-                                    </div>
-                                    <div class="from-group col-md-12 mt-3">
-                                        <input type="submit" id="getDate" class="btn btn-primary btn-block" value="Submit">
-                                    </div>
+                                <div class="from-group col-md-12 mt-3">
+                                    <input type="submit" id="getDate" class="btn btn-primary btn-block" value="Submit">
                                 </div>
-                            </form>
-                        </div>
+                            </div>
+                        </form>
+                    </div>
 
-                        {{-- <div class="col-md-12 mt-4 mb-3">
+                    {{-- <div class="col-md-12 mt-4 mb-3">
                 <div class="row">
                     <div class="col-md-6">
                         <a href="#" class="btn btn-primary">Excel</a>
@@ -100,76 +101,76 @@
                 </div>
             </div> --}}
 
-                        <div class="col-md-12 mt-5">
-                            <div class="text-center">
-                                <div class="spinner-border" id="loader" role="status">
-                                    <span class="sr-only">Loading...</span>
-                                </div>
+                    <div class="col-md-12 mt-5">
+                        <div class="text-center">
+                            <div class="spinner-border" id="loader" role="status">
+                                <span class="sr-only">Loading...</span>
                             </div>
-                            <table id="particitants" class="table">
-
-                            </table>
                         </div>
+                        <table id="particitants" class="table">
+
+                        </table>
                     </div>
                 </div>
-                <div class="overlay"></div>
-                <script src="{{ asset('js/part.js') }}" defer></script>
-                <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
+            </div>
+            <div class="overlay"></div>
+            <script src="{{ asset('js/part.js') }}" defer></script>
+            <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
+
+            <script>
+                $('#loader').hide();
+
+                $('#getDate').on('click', function() {
+                    $('#loader').show();
+                    $('body').addClass('loader');
+                });
+            </script>
+
+            @if (isset($response))
 
                 <script>
-                    $('#loader').hide();
+                    $(document).ready(function() {
 
-                    $('#getDate').on('click', function() {
-                        $('#loader').show();
-                        $('body').addClass('loader');
+                        $('#loader').hide();
+                        $('body').remove('loader');
+
+                        let row = {!! json_encode($response) !!};
+                        if (row) {
+                            $("#particitants").DataTable({
+                                dom: "Bfrtip",
+                                processing: true,
+                                bSort: true,
+                                bPaginate: true,
+                                buttons: ["copy", "excel", "pdf", "print"],
+                                data: row,
+                                columns: [{
+                                        title: "Meeting Id"
+                                    },
+                                    {
+                                        title: "Host Name"
+                                    },
+                                    {
+                                        title: "Meeting Topic"
+                                    },
+                                    {
+                                        title: "Start Time."
+                                    },
+                                    {
+                                        title: "Participant Name"
+                                    },
+                                    {
+                                        title: "Participant Email"
+                                    },
+                                ],
+                            });
+
+                            $(".dt-button").addClass("btn");
+                            $(".dt-button").addClass("btn-primary");
+                        }
                     });
                 </script>
+            @endif
 
-                @if (isset($response))
+        </body>
 
-                    <script>
-                        $(document).ready(function() {
-
-                            $('#loader').hide();
-                            $('body').remove('loader');
-
-                            let row = {!! json_encode($response) !!};
-                            if (row) {
-                                $("#particitants").DataTable({
-                                    dom: "Bfrtip",
-                                    processing: true,
-                                    bSort: true,
-                                    bPaginate: true,
-                                    buttons: ["copy", "excel", "pdf", "print"],
-                                    data: row,
-                                    columns: [{
-                                            title: "Meeting Id"
-                                        },
-                                        {
-                                            title: "Host Name"
-                                        },
-                                        {
-                                            title: "Meeting Topic"
-                                        },
-                                        {
-                                            title: "Start Time."
-                                        },
-                                        {
-                                            title: "Participant Name"
-                                        },
-                                        {
-                                            title: "Participant Email"
-                                        },
-                                    ],
-                                });
-
-                                $(".dt-button").addClass("btn");
-                                $(".dt-button").addClass("btn-primary");
-                            }
-                        });
-                    </script>
-                @endif
-
-            </body>
-
-            </html>
+        </html>

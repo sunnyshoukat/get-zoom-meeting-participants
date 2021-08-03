@@ -16,7 +16,6 @@ class ZoomController extends Controller
 
     public function getParticipantes(Request $request)
     {
-        // set_time_limit(0);
         $this->validate($request, [
             'token' => 'required',
             'from_date' => 'required',
@@ -26,9 +25,7 @@ class ZoomController extends Controller
         $from_date = date('Y-m-d', strtotime($request->from_date));
         $to_date = date('Y-m-d', strtotime($request->to_date));
         $response = $this->zoomApiCurl($request->token, $from_date, $to_date);
-        // echo '<pre>';
-        // print_r($response['meetings']);
-        // exit;
+
         if ($from_date > $to_date) {
             $data['title'] = 'Get Participant';
             $data['token'] = $request->token;
@@ -38,23 +35,23 @@ class ZoomController extends Controller
             return view('welcome', $data);
         }
 
-        // dd($response['meetings']);
         $participantsList = array();
         if ($response) {
             foreach ($response['meetings'] as $key => $value) {
                 $participants = $this->getParticipantesList($value['id'], $request->token);
                 if (isset($participants)) {
-
                     $participants = collect($participants);
-                    $participants = $participants->unique('id')->all();
+                    $participants = $participants->unique('id');
+                    $participants = $participants->unique('name')->all();
                     foreach ($participants as $key => $participant) {
                         $newarray = [];
+                        $indexes = [];
                         $newarray['id'] = $value['id'];
                         $newarray['host'] = $value['host'];
                         $newarray['topic'] = $value['topic'];
                         $newarray['start_time'] = date('d-m-Y h:s A', strtotime($value['start_time']));
-                        $newarray['user_name'] = $participant['name'];
-                        $newarray['email'] = isset($participant['user_email']) ? $participant['user_email'] : '-';
+                        $newarray['name'] = $participant['name'];
+                        $newarray['user_email'] = $participant['user_email'] == '' ? $participant['user_email'] : '-';
                         $newarray = array_values($newarray);
                         array_push($participantsList, $newarray);
                     }

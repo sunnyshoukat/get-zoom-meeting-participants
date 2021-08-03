@@ -92,17 +92,6 @@
                         </form>
                     </div>
 
-                    {{-- <div class="col-md-12 mt-4 mb-3">
-                <div class="row">
-                    <div class="col-md-6">
-                        <a href="#" class="btn btn-primary">Excel</a>
-                    </div>
-                    <div class="col-md-6">
-                        <input type="text" id='getData' placeholder="Search" class="form-control float-right w-50">
-                    </div>
-                </div>
-            </div> --}}
-
                     <div class="col-md-12 mt-5">
                         <div class="text-center">
                             <div class="spinner-border" id="loader" role="status">
@@ -137,6 +126,7 @@
                         $('body').remove('loader');
 
                         let row = {!! json_encode($response) !!};
+
                         if (row) {
                             $("#particitants").DataTable({
                                 dom: "Bfrtip",

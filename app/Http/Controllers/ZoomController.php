@@ -34,6 +34,7 @@ class ZoomController extends Controller
             $data['error'] = 'From Date must be greater than To Date';
             return view('welcome', $data);
         }
+        // dd($response['meetings']);
 
         $participantsList = array();
         if ($response) {
@@ -41,24 +42,33 @@ class ZoomController extends Controller
                 $participants = $this->getParticipantesList($value['id'], $request->token);
                 if (isset($participants)) {
                     $participants = collect($participants);
-                    $participants = $participants->unique('id');
-                    $participants = $participants->unique('name')->all();
+                    $participants = $participants->unique('id')->all();
+                    $filterArray = [];
                     foreach ($participants as $key => $participant) {
                         $newarray = [];
-                        $indexes = [];
                         $newarray['id'] = $value['id'];
                         $newarray['host'] = $value['host'];
                         $newarray['topic'] = $value['topic'];
                         $newarray['start_time'] = date('d-m-Y h:s A', strtotime($value['start_time']));
                         $newarray['name'] = $participant['name'];
-                        $newarray['user_email'] = $participant['user_email'] == '' ? $participant['user_email'] : '-';
-                        $newarray = array_values($newarray);
-                        array_push($participantsList, $newarray);
+                        $newarray['user_email'] = $participant['user_email'] != '' ? $participant['user_email'] : '-';
+
+                        $no_in_array = $this->filterItem($filterArray, $participant);
+
+                        if ($no_in_array) {
+                            array_push($filterArray, $newarray);
+                        }
+                    }
+                    // $filterArray = array_values($filterArray);
+                    // dd($filterArray);
+                    foreach ($filterArray as $key => $item) {
+                        $item = array_values($item);
+                        array_push($participantsList, $item);
                     }
                 }
             }
         }
-
+        // dd($participantsList);
         $data['title'] = 'Get Participant';
         $data['token'] = $request->token;
         $data['from_date'] = $request->from_date;
@@ -66,6 +76,17 @@ class ZoomController extends Controller
         $data['response'] = $participantsList;
 
         return view('welcome', $data);
+    }
+
+    private function filterItem($items, $row)
+    {
+        $row = (array)$row;
+        foreach ($items as $item) {
+            if (($item['name']  == $row['name']  || $item['user_email'] == ['user_email'])) {
+                return false;
+            }
+        }
+        return true;
     }
 
 
@@ -128,6 +149,10 @@ class ZoomController extends Controller
             return json_decode($err, true);
         }
         $response = json_decode($response, true);
-        return $response['participants'];
+        if ($response && isset($response['participants'])) {
+            return $response['participants'];
+        }
+
+        return [];
     }
 }

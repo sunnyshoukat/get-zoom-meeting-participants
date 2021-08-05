@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use PhpParser\Node\Expr\Empty_;
 
 class ZoomController extends Controller
 {
@@ -37,14 +38,18 @@ class ZoomController extends Controller
         // dd($response['meetings']);
 
         $participantsList = array();
+
         if ($response) {
             foreach ($response['meetings'] as $key => $value) {
+                // dd($response['meetings']);
                 $participants = $this->getParticipantesList($value['id'], $request->token);
+                // dd($participants);
                 if (isset($participants)) {
                     $participants = collect($participants);
                     $participants = $participants->unique('id')->all();
                     $filterArray = [];
                     foreach ($participants as $key => $participant) {
+
                         $newarray = [];
                         $newarray['id'] = $value['id'];
                         $newarray['host'] = $value['host'];
@@ -52,22 +57,23 @@ class ZoomController extends Controller
                         $newarray['start_time'] = date('d-m-Y h:s A', strtotime($value['start_time']));
                         $newarray['name'] = $participant['name'];
                         $newarray['user_email'] = $participant['user_email'] != '' ? $participant['user_email'] : '-';
-
                         $no_in_array = $this->filterItem($filterArray, $participant);
-
+                        // $newarray = array_values($newarray);
+                        // array_push($participantsList, $newarray);
                         if ($no_in_array) {
                             array_push($filterArray, $newarray);
                         }
                     }
-                    // $filterArray = array_values($filterArray);
-                    // dd($filterArray);
+                    $filterArray = array_values($filterArray);
                     foreach ($filterArray as $key => $item) {
                         $item = array_values($item);
                         array_push($participantsList, $item);
                     }
                 }
             }
+            // dd($participantsList);
         }
+        // dd($participantsList);
         // dd($participantsList);
         $data['title'] = 'Get Participant';
         $data['token'] = $request->token;
@@ -81,9 +87,13 @@ class ZoomController extends Controller
     private function filterItem($items, $row)
     {
         $row = (array)$row;
-        foreach ($items as $item) {
-            if (($item['name']  == $row['name']  || $item['user_email'] == ['user_email'])) {
-                return false;
+
+        if (!empty($row['name'])) {
+
+            foreach ($items as $item) {
+                if (($item['name']  == $row['name']  && $item['user_email'] == ['user_email'])) {
+                    return false;
+                }
             }
         }
         return true;
@@ -122,11 +132,12 @@ class ZoomController extends Controller
     public function getParticipantesList($id, $token)
     {
         // set_time_limit(0);
+        $url = "https://api.zoom.us/v2/past_meetings/$id/participants";
 
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.zoom.us//v2/past_meetings/$id/participants",
+            CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -139,6 +150,7 @@ class ZoomController extends Controller
             ),
         ));
 
+
         $response = curl_exec($curl);
 
         $err = curl_error($curl);
@@ -149,9 +161,72 @@ class ZoomController extends Controller
             return json_decode($err, true);
         }
         $response = json_decode($response, true);
+        $nextResponse = [];
+        if ($response['page_count'] > 1) {
+            $nextToken = $response['next_page_token'];
+
+            for ($i = 1; $i < $response['page_count']; $i++) {
+                // if ($i == 0) {
+                $nextResponse = $this->getParticipantesListNext($id, $token, $nextToken);
+                // }
+                $nextToken = $nextResponse['next_page_token'];
+
+                foreach ($nextResponse['participants'] as $key => $nextRow) {
+                    array_push($response['participants'], $nextRow);
+                }
+            }
+        }
+
+        // dd($response);
         if ($response && isset($response['participants'])) {
             return $response['participants'];
         }
+        return [];
+    }
+
+    public function getParticipantesListNext($id, $token, $nest_token)
+    {
+        // set_time_limit(0);
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => "https://api.zoom.us//v2/past_meetings/$id/participants?next_page_token=$nest_token",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+                "Authorization: Bearer $token",
+            ),
+        ));
+
+
+        $response = curl_exec($curl);
+
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if (!$response) {
+            return json_decode($err, true);
+        }
+        $response = json_decode($response, true);
+
+        // $nextResponse = [];
+        // if (!empty($response['next_page_token']) && isset($response['next_page_token'])) {
+        //     foreach ($nextResponse['participants'] as $key => $nextRow) {
+        //         array_push($response['participants'], $nextRow);
+        //     }
+        //     $this->getParticipantesListNext($id, $token, $response['next_page_token']);
+        // }
+        if ($response) {
+            return $response;
+        }
+
 
         return [];
     }

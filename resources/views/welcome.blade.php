@@ -126,7 +126,7 @@
                         $('body').remove('loader');
 
                         let row = {!! json_encode($response) !!};
-
+                        console.log(row)
                         if (row) {
                             $("#particitants").DataTable({
                                 dom: "Bfrtip",

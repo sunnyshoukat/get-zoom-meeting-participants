@@ -120,21 +120,40 @@
             @if (isset($response))
 
                 <script>
+                    function filterRow(items, row) {
+                        let flag = true;
+                        items.forEach(e => {
+                            // return !(e[5] == row[5])
+                            if (e[4] == row[4] && e[5] == row[5]) {
+                                flag = false
+                            }
+                        })
+                        return flag
+                    }
+
                     $(document).ready(function() {
 
                         $('#loader').hide();
                         $('body').remove('loader');
-
+                        let filteredArr = []
                         let row = {!! json_encode($response) !!};
-                        console.log(row)
-                        if (row) {
+                        row.forEach(element => {
+
+                            let no_exit = filterRow(filteredArr, element)
+                            console.log(no_exit)
+                            if (no_exit) {
+                                filteredArr.push(element)
+                            }
+                        });
+
+                        if (filteredArr) {
                             $("#particitants").DataTable({
                                 dom: "Bfrtip",
                                 processing: true,
                                 bSort: true,
                                 bPaginate: true,
                                 buttons: ["copy", "excel", "pdf", "print"],
-                                data: row,
+                                data: filteredArr,
                                 columns: [{
                                         title: "Meeting Id"
                                     },

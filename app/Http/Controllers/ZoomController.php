@@ -87,16 +87,17 @@ class ZoomController extends Controller
     private function filterItem($items, $row)
     {
         $row = (array)$row;
+        $flag = true;
 
         if (!empty($row['name'])) {
 
             foreach ($items as $item) {
-                if (($item['name']  == $row['name']  && $item['user_email'] == ['user_email'])) {
-                    return false;
+                if ((strtolower(trim($item['name']))  == strtolower(trim($row['name']))  &&  (strtolower(trim($item['user_email'])) == strtolower(trim($row['user_email']))))) {
+                    $flag = false;
                 }
             }
         }
-        return true;
+        return $flag;
     }
 
 

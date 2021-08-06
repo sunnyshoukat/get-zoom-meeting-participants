@@ -162,18 +162,17 @@ class ZoomController extends Controller
             return json_decode($err, true);
         }
         $response = json_decode($response, true);
+        // dd($response);
         $nextResponse = [];
-        if ($response['page_count'] > 1) {
-            $nextToken = $response['next_page_token'];
-
-            for ($i = 1; $i < $response['page_count']; $i++) {
-                // if ($i == 0) {
-                $nextResponse = $this->getParticipantesListNext($id, $token, $nextToken);
-                // }
-                $nextToken = $nextResponse['next_page_token'];
-
-                foreach ($nextResponse['participants'] as $key => $nextRow) {
-                    array_push($response['participants'], $nextRow);
+        if (isset($response['page_count']) && $response['page_count'] > 1) {
+            if (isset($response['next_page_token'])) {
+                $nextToken = $response['next_page_token'];
+                for ($i = 1; $i < $response['page_count']; $i++) {
+                    $nextResponse = $this->getParticipantesListNext($id, $token, $nextToken);
+                    $nextToken = $nextResponse['next_page_token'];
+                    foreach ($nextResponse['participants'] as $key => $nextRow) {
+                        array_push($response['participants'], $nextRow);
+                    }
                 }
             }
         }

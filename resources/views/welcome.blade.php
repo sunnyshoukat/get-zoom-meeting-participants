@@ -104,7 +104,12 @@
                     </div>
                 </div>
             </div>
+            <a href="{{ route('get') }}" target="_blank" class="sheetBtn btn btn-primary d-none">Google Sheet</a>
+            <a href="{{ route('set.empty') }}" target="_blank" class="sheetBtn btn btn-primary d-none ml-1">Set Google Sheet
+                Empty</a>
             <div class="overlay"></div>
+
+
             <script src="{{ asset('js/part.js') }}" defer></script>
             <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
 
@@ -123,7 +128,6 @@
                     function filterRow(items, row) {
                         let flag = true;
                         items.forEach(e => {
-                            // return !(e[5] == row[5])
                             if (e[4] == row[4] && e[5] == row[5]) {
                                 flag = false
                             }
@@ -177,6 +181,9 @@
 
                             $(".dt-button").addClass("btn");
                             $(".dt-button").addClass("btn-primary");
+                            let sheetBtn = $('.sheetBtn');
+                            sheetBtn.removeClass('d-none');
+                            $('.dt-buttons').append(sheetBtn)
                         }
                     });
                 </script>

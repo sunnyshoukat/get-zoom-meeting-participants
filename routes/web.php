@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SheetController;
 use App\Http\Controllers\ZoomController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,4 +16,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [ZoomController::class, 'index']);
+Route::get('/get', [SheetController::class, 'get'])->name('get');
+Route::get('/empty', [SheetController::class, 'empty'])->name('set.empty');
 Route::post('/get/participants', [ZoomController::class, 'getParticipantes'])->name('get.participants');

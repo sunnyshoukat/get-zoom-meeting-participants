@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use PhpParser\Node\Expr\Empty_;
 
 class ZoomController extends Controller
@@ -35,15 +36,11 @@ class ZoomController extends Controller
             $data['error'] = 'From Date must be greater than To Date';
             return view('welcome', $data);
         }
-        // dd($response['meetings']);
-
         $participantsList = array();
-
+        $sheetData = [];
         if ($response) {
             foreach ($response['meetings'] as $key => $value) {
-                // dd($response['meetings']);
                 $participants = $this->getParticipantesList($value['id'], $request->token);
-                // dd($participants);
                 if (isset($participants)) {
                     $participants = collect($participants);
                     $participants = $participants->unique('id')->all();
@@ -58,12 +55,12 @@ class ZoomController extends Controller
                         $newarray['name'] = $participant['name'];
                         $newarray['user_email'] = $participant['user_email'] != '' ? $participant['user_email'] : '-';
                         $no_in_array = $this->filterItem($filterArray, $participant);
-                        // $newarray = array_values($newarray);
-                        // array_push($participantsList, $newarray);
                         if ($no_in_array) {
+                            array_push($sheetData, $newarray);
                             array_push($filterArray, $newarray);
                         }
                     }
+
                     $filterArray = array_values($filterArray);
                     foreach ($filterArray as $key => $item) {
                         $item = array_values($item);
@@ -71,10 +68,10 @@ class ZoomController extends Controller
                     }
                 }
             }
-            // dd($participantsList);
         }
-        // dd($participantsList);
-        // dd($participantsList);
+
+        Session::put('participants', $sheetData);
+
         $data['title'] = 'Get Participant';
         $data['token'] = $request->token;
         $data['from_date'] = $request->from_date;
@@ -162,7 +159,6 @@ class ZoomController extends Controller
             return json_decode($err, true);
         }
         $response = json_decode($response, true);
-        // dd($response);
         $nextResponse = [];
         if (isset($response['page_count']) && $response['page_count'] > 1) {
             if (isset($response['next_page_token']) && $response['next_page_token'] != '') {
@@ -179,7 +175,6 @@ class ZoomController extends Controller
             }
         }
 
-        // dd($response);
         if ($response && isset($response['participants'])) {
             return $response['participants'];
         }
@@ -188,8 +183,6 @@ class ZoomController extends Controller
 
     public function getParticipantesListNext($id, $token, $nest_token)
     {
-        // set_time_limit(0);
-
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
@@ -218,13 +211,6 @@ class ZoomController extends Controller
         }
         $response = json_decode($response, true);
 
-        // $nextResponse = [];
-        // if (!empty($response['next_page_token']) && isset($response['next_page_token'])) {
-        //     foreach ($nextResponse['participants'] as $key => $nextRow) {
-        //         array_push($response['participants'], $nextRow);
-        //     }
-        //     $this->getParticipantesListNext($id, $token, $response['next_page_token']);
-        // }
         if ($response) {
             return $response;
         }

@@ -69,7 +69,7 @@ class ZoomController extends Controller
                 }
             }
         }
-
+        // dd($sheetData);
         Session::put('participants', $sheetData);
 
         $data['title'] = 'Get Participant';
@@ -89,7 +89,7 @@ class ZoomController extends Controller
         if (!empty($row['name'])) {
 
             foreach ($items as $item) {
-                if ((strtolower(trim($item['name']))  == strtolower(trim($row['name']))  &&  (strtolower(trim($item['user_email'])) == strtolower(trim($row['user_email']))))) {
+                if ((strtolower(trim($item['name']))  == strtolower(trim($row['name']))  &&  (strtolower(trim($item['user_email'])) == strtolower(trim($row['user_email']))) && $item['id'] == $item['id'])) {
                     $flag = false;
                 }
             }

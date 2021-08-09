@@ -128,7 +128,7 @@
                     function filterRow(items, row) {
                         let flag = true;
                         items.forEach(e => {
-                            if (e[4] == row[4] && e[5] == row[5]) {
+                            if (e[0] == row[0] && e[4] == row[4] && e[5] == row[5]) {
                                 flag = false
                             }
                         })
